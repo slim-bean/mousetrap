@@ -6,7 +6,7 @@
 
 ## Background
 
-I live in a fairly rural area and mice are a constant problem in our house. They get into the attic where they build homes in the insulation. I generally adhere to the "live and let live" philosophy however these mice are disruptive, destructive and filthy. They wake us up at night scurrying over the ceiling and their urination soaks into the drywall and stains the ceilings. 
+I live in a fairly rural area and mice are a constant problem in our house. They get into the attic where they build homes in the insulation. I generally adhere to the "live and let live" philosophy however these mice are disruptive, destructive and filthy. They wake us up at night scurrying over the ceiling and their urine soaks into the drywall and stains the ceilings. 
 
 Over the years I've looked at many methods to deal with mice in as humane a way as possible, mostly using traditional snap-trap style traps. In my experience they are simple and effective, most of the time they kill the mice instantly. There are a few problems however, knowing when a mouse has been caught as they only work one time without being reset, they are also very "intense" and the cleanup is not for the faint of heart. Lastly sometimes the mice are injured and not killed which makes me terribly sad at the thought of any creature suffering.
 
@@ -32,6 +32,8 @@ The flavor of esp board I'm using comes from [dfrobot](https://wiki.dfrobot.com/
 The first challenge however is the max input voltage for these boards is 5.5V and the victor trap uses 4 1.5C batteries in series which makes over 6V with fully charged batteries.
 
 To work around this I put a tap wire after 3 of the 4 batteries in series to give me a voltage in the range accepted by the esp32 board.
+
+I also cut the low-power trace on this particular board so that it uses the least amount of power possible while in deep sleep.
 
 #### Detecting operation
 
@@ -69,6 +71,3 @@ I also added an SHT31 temp and humidty sensor to one of my traps, I put the code
 
 
 4.6V at the switch and it starts blinking
-
-
-0.00036
