@@ -2,6 +2,8 @@
 
 **Note** This project adds an esp32 to an electric mousetrap designed to kill mice. If this is something you find offense this project may not be for you.
 
+![20220328_101453](https://user-images.githubusercontent.com/10332331/160418475-42de3abe-184b-42a5-b85c-4bdae1c8fe3b.jpg)
+
 ## Background
 
 I live in a fairly rural area and mice are a constant problem in our house. They get into the attic where they build homes in the insulation. I generally adhere to the "live and let live" philosophy however these mice are disruptive, destructive and filthy. They wake us up at night scurrying over the ceiling and their urination soaks into the drywall and stains the ceilings. 
@@ -23,6 +25,7 @@ So what I did was add an esp32 to detect when the trap is actuated as well as tr
 The flavor of esp board I'm using comes from [dfrobot](https://wiki.dfrobot.com/FireBeetle_Board_ESP32_E_SKU_DFR0654#target_0), they are relatively inexpensive and have extremely low standby power in deep sleep mode.
 
 ### Wiring
+![20220328_101557](https://user-images.githubusercontent.com/10332331/160418819-3d1a03fb-8fb1-4296-9954-c5673cc21616.jpg)
 
 #### Powering the esp32
 
@@ -34,6 +37,7 @@ To work around this I put a tap wire after 3 of the 4 batteries in series to giv
 
 The second challenge was getting an indicator of the trap being activated. Because of the voltage incompatability, I decided to try to keep my detection as separate as possible from the existing circuits. I discovered 2 limit switches used to control the rotation of the mechanism. These switches were also dual pole with only a single pole in use, I realized if I swapped the two wires of the top switch I could use the second unused pole to indicate when the top limit switch wasn't being depressed (which happens when the device actuates). This gave me a switch that I could use to pull a pullup to ground when the switch was relased and used to track the motion of the mechanism.
 
+![20220328_101635](https://user-images.githubusercontent.com/10332331/160418567-8aba2b32-6b19-44b0-8579-28eca6d2a8a9.jpg)
 
 #### Detecting voltage
 
