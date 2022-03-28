@@ -37,7 +37,7 @@ I also cut the low-power trace on this particular board so that it uses the leas
 
 #### Detecting operation
 
-The second challenge was getting an indicator of the trap being activated. Because of the voltage incompatability, I decided to try to keep my detection as separate as possible from the existing circuits. I discovered 2 limit switches used to control the rotation of the mechanism. These switches were also dual pole with only a single pole in use, I realized if I swapped the two wires of the top switch I could use the second unused pole to indicate when the top limit switch wasn't being depressed (which happens when the device actuates). This gave me a switch that I could use to pull a pullup to ground when the switch was relased and used to track the motion of the mechanism.
+The second challenge was getting an indicator of the trap being activated. Because of the voltage incompatibility, I decided to try to keep my detection as separate as possible from the existing circuits. I discovered 2 limit switches used to control the rotation of the mechanism. These switches were also dual pole with only a single pole in use, I realized if I swapped the two wires of the top switch I could use the second unused pole to indicate when the top limit switch wasn't being depressed (which happens when the device actuates). This gave me a switch that I could use to pull a pullup to ground when the switch was released and used to track the motion of the mechanism.
 
 ![20220328_101635](https://user-images.githubusercontent.com/10332331/160418567-8aba2b32-6b19-44b0-8579-28eca6d2a8a9.jpg)
 
@@ -51,7 +51,7 @@ I threw together the fastest software I could to accomplish my goals of notifyin
 
 One of the more interesting challenges was when I discovered all my hard work to connect to the limit switch was kind of unnecessary as whenever the mouse trap activated the high voltage AC to the contact plates it was so noisy it would trigger the interrupt I was using on the switch to indicate the trap activation. At first I put some really basic delays in here but this wasn't ideal because when you power on the device it activates the high voltage AC briefly which triggered an event. I ended up putting a polling debounce on the switch to make sure it was held low for at least 1 sec before firing the event. It takes a couple seconds for the mechanism to move through a cycle and this seems to work well.
 
-I'm using the [Loki Arduino](https://github.com/grafana/loki-arduino) library to send events and hearbeats to Loki.
+I'm using the [Loki Arduino](https://github.com/grafana/loki-arduino) library to send events and heartbeats to Loki.
 
 To get this to build on platformio (the first time I've used it, and it was awesome!) I had to manually remove the WifiNINA library (which gets added as a dependency) and then in the `platformio.ini` file:
 
@@ -64,7 +64,7 @@ There is some magic I put in place in the library to try to do this automaticall
 
 You'll also want to change out the certificate, this is the root cert for let's encrypt which is what I use to add TLS to my endpoints.
 
-I also added an SHT31 temp and humidty sensor to one of my traps, I put the code for this in `#if` blocks so that it only compiles for one of the ID's
+I also added an SHT31 temp and humidity sensor to one of my traps, I put the code for this in `#if` blocks so that it only compiles for one of the ID's
 
 
 
