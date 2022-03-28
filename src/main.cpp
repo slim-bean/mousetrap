@@ -5,7 +5,7 @@
 #include <GrafanaLoki.h>
 #include <esp_task_wdt.h>
 
-// Adding these as deps so platformio knows to include them for the SHT31 code to compile (even if we dont' import it)
+// Adding these as deps so platformio knows to include them for the SHT31 code to compile (even if we don't import/use it)
 #include <Wire.h>
 #include <SPI.h>
 
@@ -19,7 +19,8 @@ Adafruit_SHT31 sht31 = Adafruit_SHT31();
 PromLokiTransport transport;
 LokiClient client(transport);
 
-// Every hour send a heartbeat: "msg=heartbeat batt=0.000000 rssi=-62 temp=21.58 humidity=00.00"
+// Heartbeat message: "msg=heartbeat batt=0.000000 rssi=-62 temp=21.58 humidity=00.00"
+// temp/humidity is not included in all, 100 chars should cover everything.
 #define HBM_LENGTH 100
 LokiStream heartbeat(1, HBM_LENGTH, "{job=\"mousetrap\",type=\"heartbeat\",id=\"" ID "\"}");
 
@@ -33,6 +34,7 @@ void setup()
 {
   Serial.begin(9600);
 
+  // Start the watchdog timer, sometimes connecting to wifi or trying to set the time can fail in a way that never recovers
   esp_task_wdt_init(WDT_TIMEOUT, true);
   esp_task_wdt_add(NULL);
 
@@ -41,7 +43,7 @@ void setup()
   esp_sleep_wakeup_cause_t wakeup_reason;
   wakeup_reason = esp_sleep_get_wakeup_cause();
 
-  // Keep just one message because we only configured one entry per stream.
+  // Keep just one message because we only configured one entry per stream. This could be revisited to do all the message creation local to an addEntry() function on a stream.
   char heartbeatMsg[HBM_LENGTH] = {'\0'};
   bool timerHeartbeat = false;
   char mouseMsg[MM_LENGTH] = {'\0'};
@@ -57,7 +59,7 @@ void setup()
       {
         if (digitalRead(TRAP_GPIO))
         {
-          // If the value is back to 1 that means the switch is off
+          // If the value is back to 1 that means the switch is off so this was likely a noise event
           s = false;
           break;
         }
@@ -95,6 +97,11 @@ void setup()
     break;
   }
 
+  // To save connecting to wifi and setting the time when there is nothing to send we use the message vars to check to see
+  // if any messages have been set, I then realized that I couldn't build the heartbeat message with an RSSI value until
+  // the wifi is connected so I added this crappy bool to track if a heartbeat message should be sent. (based on deep sleep timer timeout)
+  // This is all fairly brittle and prone to error and there are going to be better ways to track if we should send messages etc
+  // but it's good enough for a weekend project :)
   if (timerHeartbeat || heartbeatMsg[0] == '\0' || mouseMsg[0] == '\0')
   {
 
@@ -134,6 +141,7 @@ void setup()
     uint64_t time;
     time = client.getTimeNanos();
 
+    // If the mouse message string isn't empty, add an entry for it.
     if (mouseMsg[0] != '\0')
     {
       if (!mouse.addEntry(time, mouseMsg, strlen(mouseMsg)))
@@ -142,6 +150,8 @@ void setup()
       }
     }
 
+    // If the heartbeat message is empty and we are here because of a timer, build the heartbeat message
+    // The only case where the heartbeat message may not be empty is initial power up where we send the 'poweron' message.
     if (heartbeatMsg[0] == '\0' && timerHeartbeat)
     {
       float bv = 0.0;
@@ -153,7 +163,7 @@ void setup()
           batt += analogRead(A0);
           delay(5);
         }
-
+        // calculate the averate, convert it to a voltage (3.3V is max and would correspond to 4095), multiply by 2 because of our phsyical voltage divider.
         bv = (batt / 10) * (3.3 / 4095.0) * 2;
       }
 #if IDINT == 3
@@ -173,6 +183,8 @@ void setup()
       snprintf(heartbeatMsg, HBM_LENGTH, "msg=heartbeat batt=%f rssi=%d", bv, WiFi.RSSI());
 #endif
     }
+    
+    // If the heartbeat message isn't empty add an entry for it.
     if (heartbeatMsg[0] != '\0')
     {
       if (!heartbeat.addEntry(time, heartbeatMsg, strlen(heartbeatMsg)))
@@ -181,6 +193,7 @@ void setup()
       }
     }
 
+    // Send the message, we build in a few retries as well.
     uint64_t start = millis();
     for (uint8_t i = 0; i <= 5; i++)
     {
